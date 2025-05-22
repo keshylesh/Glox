@@ -1,1 +1,1 @@
-# Simple-Interpreter-for-C
+# Glox: A Lox interpretor implemented in Go
