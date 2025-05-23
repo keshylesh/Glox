@@ -1,9 +1,16 @@
 package util
 
+// Enum to represent the tokens that can be scanned
 type TokenType int
 
 const (
-    NO_TYPE TokenType = iota
+    // NO_TYPE: Special token; used to make sure the keyword
+    // mapping doesn't accidentally use an existing token
+    // if a mapping doesn't exist it would return 0 which would
+    // correspond to LEFT_PAREN if NO_TYPE were not there
+    NO_TYPE TokenType = iota 
+    
+    // Single-byte tokens
     LEFT_PAREN
     RIGHT_PAREN
     LEFT_BRACE
@@ -15,7 +22,8 @@ const (
     SEMICOLON
     SLASH
     STAR
-    
+
+    // One or two byte tokens
     BANG
     BANG_EQUAL
     EQUAL
@@ -25,10 +33,12 @@ const (
     LESS
     LESS_EQUAL
 
+    // Literals
     IDENTIFIER
     STRING
     NUMBER
 
+    // Keywords
     AND
     CLASS
     ELSE
@@ -46,13 +56,19 @@ const (
     VAR
     WHILE
 
+    // End Of File
     EOF
 )
 
+// following line to use the stringer tool to automatically generate
+// string mappings for all the values of TokenType for human
+// readability
 //go:generate stringer -type=TokenType
 
+// create a new Object type for convenience
 type Object interface{}
 
+// keywords to recognise and map tokens to
 var Keywords = map[string]TokenType{
     "and": AND,
     "class": CLASS,

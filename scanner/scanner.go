@@ -14,6 +14,7 @@ type Scanner struct {
     line int
 }
 
+// Return a new "object"(read pointer) of type Scanner(read *Scanner) 
 func NewScanner(src string) *Scanner {
     ret := Scanner {
         src: src,
@@ -23,6 +24,8 @@ func NewScanner(src string) *Scanner {
     return &ret
 }
 
+// Public method of Scanner that scans the src string for tokens
+// and returns the token slice
 func (s *Scanner) ScanTokens() []Token {
     for !s.isAtEnd() {
         s.start = s.current
@@ -33,6 +36,7 @@ func (s *Scanner) ScanTokens() []Token {
     return s.tokens
 }
 
+// Method of Scanner to scan a single token
 func (s *Scanner) scanToken() {
     c := s.advance()
     switch c {
@@ -93,6 +97,7 @@ func (s *Scanner) scanToken() {
     case '\r':
         fallthrough
     case '\t':
+        // Discard whitespace
     case '\n':
         s.line++
     case '"':
@@ -108,6 +113,8 @@ func (s *Scanner) scanToken() {
     }
 }
 
+// Function to finish scanning an identifier. It checks if the text maps to 
+// an existing TokenType else is NO_TYPE and assigns it as IDENTIFIER
 func (s *Scanner) identifier() {
     for IsAlphaNumeric(s.peek()) {
         s.advance()
@@ -122,6 +129,7 @@ func (s *Scanner) identifier() {
     s.addToken(tType, nil)
 }
 
+// Function to finish scanning a string 
 func (s *Scanner) string() {
     for s.peek() != '"' && !s.isAtEnd() {
         if s.peek() == '\n' {
@@ -142,6 +150,7 @@ func (s *Scanner) string() {
     s.addToken(STRING, value)
 }
 
+// Function to finish scanning a number
 func (s *Scanner) number() {
     for IsDigit(s.peek()) {
         s.advance()
@@ -156,13 +165,13 @@ func (s *Scanner) number() {
         }
     }
 
-    f, e := strconv.ParseFloat(s.src[s.start : s.current], 64)
-    if e != nil {
-        panic(e)
-    }
+    // Convert string -> double
+    f, err := strconv.ParseFloat(s.src[s.start : s.current], 64)
+    check(err)
     s.addToken(NUMBER, f)
 }
 
+// Function to check if the next byte matches the expected byte
 func (s *Scanner) match(expected byte) bool {
     if s.isAtEnd() || s.src[s.current] != expected {
         return false
@@ -172,6 +181,7 @@ func (s *Scanner) match(expected byte) bool {
     return true
 } 
 
+// Function to peek at the next byte without advancing
 func (s *Scanner) peek() byte {
     if s.isAtEnd() {
         return 0
@@ -180,6 +190,7 @@ func (s *Scanner) peek() byte {
     return s.src[s.current]
 }
 
+// Function to peek at the next to next byte without advancing
 func (s *Scanner) peekNext() byte {
     if s.current + 1 >= len(s.src) {
         return 0
@@ -188,16 +199,19 @@ func (s *Scanner) peekNext() byte {
     return s.src[s.current + 1]
 }
 
+// Function to check if source string is at the end
 func (s *Scanner) isAtEnd() bool {
     return s.current >= len(s.src)
 }
 
+// Function to return the current byte and move the current index forward
 func (s *Scanner) advance() byte {
     ret := s.src[s.current]
     s.current++
     return ret
 }
 
+// Function to add a token to the tokens slice 
 func (s *Scanner) addToken(tType TokenType, literal Object) {
     text := s.src[s.start: s.current]
     s.tokens = append(s.tokens, *NewToken(tType, text, literal, s.line))
