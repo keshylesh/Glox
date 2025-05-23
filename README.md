@@ -1,1 +1,1 @@
-# Glox: A Lox interpretor implemented in Go
+# Glox: A Lox interpreter implemented in Go
