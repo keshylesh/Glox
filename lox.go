@@ -7,6 +7,8 @@ import (
     "io"
     "glox/util"
     "glox/scanner"
+    // "glox/ast"
+    // "glox/token"
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 // scan a file and interpret it
 func runFile(path string) {
     data, err := os.ReadFile(path)
-    util.check(err)
+    util.Check(err)
     run(string(data))
     if util.HadError {
         os.Exit(65)
@@ -39,7 +41,7 @@ func runPrompt() {
         if err == io.EOF {
             break
         }
-        util.check(err)
+        util.Check(err)
         run(line)
         util.HadError = false
     }
