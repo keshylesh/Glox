@@ -9,7 +9,7 @@ import (
 var HadError bool = false
 
 // Panics when encountering an error
-func check(e error) {
+func Check(e error) {
     if e != nil {
         panic(e)
     }

@@ -6,14 +6,14 @@ import (
 
 type Token struct {
     tType TokenType
-    lexeme string
+    Lexeme string
     literal Object
     line int
 }
 
 // Returns a new "object"(read pointer) of type Token(read *Token)
 func NewToken(tType TokenType, lexeme string, 
-              literal Object, line int) *Token {
+              literal Object, line int) Token {
     ret := Token {
         tType,
         lexeme,
@@ -21,5 +21,5 @@ func NewToken(tType TokenType, lexeme string,
         line,
     }
 
-    return &ret
+    return ret
 }

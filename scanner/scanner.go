@@ -32,7 +32,7 @@ func (s *Scanner) ScanTokens() []Token {
         s.scanToken()
     }
 
-    s.tokens = append(s.tokens, *NewToken(EOF, "", nil, s.line))
+    s.tokens = append(s.tokens, NewToken(EOF, "", nil, s.line))
     return s.tokens
 }
 
@@ -167,7 +167,7 @@ func (s *Scanner) number() {
 
     // Convert string -> double
     f, err := strconv.ParseFloat(s.src[s.start : s.current], 64)
-    check(err)
+    Check(err)
     s.addToken(NUMBER, f)
 }
 
@@ -214,5 +214,5 @@ func (s *Scanner) advance() byte {
 // Function to add a token to the tokens slice 
 func (s *Scanner) addToken(tType TokenType, literal Object) {
     text := s.src[s.start: s.current]
-    s.tokens = append(s.tokens, *NewToken(tType, text, literal, s.line))
+    s.tokens = append(s.tokens, NewToken(tType, text, literal, s.line))
 }
