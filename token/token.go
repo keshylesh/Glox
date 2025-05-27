@@ -5,10 +5,10 @@ import (
 )
 
 type Token struct {
-    tType TokenType
+    Type TokenType
     Lexeme string
-    literal Object
-    line int
+    Literal Object
+    Line int
 }
 
 // Returns a new "object"(read pointer) of type Token(read *Token)
