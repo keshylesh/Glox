@@ -16,8 +16,18 @@ func Check(e error) {
 }
 
 // Report an error with the given line number and message
-func Error(line int, msg string) {
-    Report(line, "", msg)
+func Error(obj Object, msg string) {
+    switch obj.(type) {
+    case int:
+        Report(obj, "", msg)
+    case Token:
+        token := obj.(Token)
+        if token.Type == EOF {
+            Report(token.Line, " at end", msg)
+        } else {
+            Report(token.Line, " at '" + token.Lexeme + "'", msg)
+        }
+    }
 }
 
 // Print out line error to stderr

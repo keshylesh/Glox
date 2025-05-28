@@ -1,5 +1,7 @@
 package util
 
+import "fmt"
+
 // Enum to represent the tokens that can be scanned
 type TokenType int
 
@@ -86,4 +88,13 @@ var Keywords = map[string]TokenType{
     "true": TRUE,
     "var": VAR,
     "while": WHILE,
+}
+
+type ParseError struct {
+    token Token
+    msg string
+}
+
+func (e *ParseError) Error() {
+    fmt.Printf("%v - %v", e.token, e.msg)
 }
