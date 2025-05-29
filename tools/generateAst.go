@@ -17,10 +17,10 @@ func main() {
     outputDir := os.Args[1]
     // list of class names and fields corresponding to them
     rules := map[string][]string {
-        "Binary": {"left Expr", "operator Token", "right Expr"},
-        "Grouping": {"expression Expr"},
-        "Literal": {"value Object"},
-        "Unary": {"operator Token", "right Expr"},
+        "Binary": {"Left Expr", "Operator Token", "Right Expr"},
+        "Grouping": {"Expression Expr"},
+        "Literal": {"Value Object"},
+        "Unary": {"Operator Token", "Right Expr"},
     }
     defineAst(outputDir, "Expr", rules)
 }

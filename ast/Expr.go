@@ -6,10 +6,10 @@ import (
 )
 
 type visitor interface {
+	VisitUnary(obj Unary) Object
 	VisitBinary(obj Binary) Object
 	VisitGrouping(obj Grouping) Object
 	VisitLiteral(obj Literal) Object
-	VisitUnary(obj Unary) Object
 }
 
 type Expr interface{
@@ -17,13 +17,13 @@ type Expr interface{
 }
 
 type Binary struct {
-	left Expr
-	operator Token
-	right Expr
+	Left Expr
+	Operator Token
+	Right Expr
 }
 
-func NewBinary(left Expr, operator Token, right Expr) Binary {
-	return Binary{left, operator, right,}
+func NewBinary(Left Expr, Operator Token, Right Expr) Binary {
+	return Binary{Left, Operator, Right,}
 }
 
 func (obj Binary) Accept(v visitor) Object {
@@ -31,11 +31,11 @@ func (obj Binary) Accept(v visitor) Object {
 }
 
 type Grouping struct {
-	expression Expr
+	Expression Expr
 }
 
-func NewGrouping(expression Expr) Grouping {
-	return Grouping{expression,}
+func NewGrouping(Expression Expr) Grouping {
+	return Grouping{Expression,}
 }
 
 func (obj Grouping) Accept(v visitor) Object {
@@ -43,11 +43,11 @@ func (obj Grouping) Accept(v visitor) Object {
 }
 
 type Literal struct {
-	value Object
+	Value Object
 }
 
-func NewLiteral(value Object) Literal {
-	return Literal{value,}
+func NewLiteral(Value Object) Literal {
+	return Literal{Value,}
 }
 
 func (obj Literal) Accept(v visitor) Object {
@@ -55,12 +55,12 @@ func (obj Literal) Accept(v visitor) Object {
 }
 
 type Unary struct {
-	operator Token
-	right Expr
+	Operator Token
+	Right Expr
 }
 
-func NewUnary(operator Token, right Expr) Unary {
-	return Unary{operator, right,}
+func NewUnary(Operator Token, Right Expr) Unary {
+	return Unary{Operator, Right,}
 }
 
 func (obj Unary) Accept(v visitor) Object {
