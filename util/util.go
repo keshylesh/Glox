@@ -16,24 +16,14 @@ func Check(e error) {
 }
 
 // Report an error with the given line number and message
-func Error(obj Object, msg string) {
-    switch obj.(type) {
-    case int:
-        Report(obj, "", msg)
-    case Token:
-        token := obj.(Token)
-        if token.Type == EOF {
-            Report(token.Line, " at end", msg)
-        } else {
-            Report(token.Line, " at '" + token.Lexeme + "'", msg)
-        }
-    }
+func Error(line int, msg string) {
+    Report(line, "", msg)
 }
 
 // Print out line error to stderr
 // no panic() as multiple errors in multiple lines are valid
 func Report(line int, where string, msg string) {
-    fmt.Fprintf(os.Stderr, "[line %v] Error %v: %v", line, where, msg)
+    fmt.Fprintf(os.Stderr, "[line %v] Error %v: %v\n", line, where, msg)
 
     // Ensure program doesn't run (for main.runFile())
     // Ensure line doesn't run (for main.runPrompt())

@@ -23,3 +23,11 @@ func NewToken(tType TokenType, lexeme string,
 
     return ret
 }
+
+func TokenError(token Token, msg string) {
+    if token.Type == EOF {
+        Report(token.Line, " at end", msg)
+    } else {
+        Report(token.Line, " at '" + token.Lexeme + "'", msg)
+    }
+}

@@ -5,11 +5,21 @@ import (
     . "glox/token"
     . "glox/ast"
     "errors"
+    "fmt"
 )
 
 type Parser struct {
     tokens []Token
     curr int
+}
+
+type ParseError struct {
+    token Token
+    msg string
+}
+
+func (e *ParseError) Error() string {
+    return fmt.Sprintf("%v - %v", e.token, e.msg)
 }
 
 // Parser "constructor"
@@ -18,13 +28,14 @@ func NewParser(tokens []Token) *Parser {
 }
 
 func (p *Parser) Parse() Expr {
-    ret, err := expression()
+    ret, err := p.expression()
     var pe *ParseError
     if errors.As(err, &pe) {
         return nil
     } else if err == nil {
         return ret
     }
+    return nil
 }
 
 // RULE expression: equality
@@ -36,14 +47,14 @@ func (p *Parser) expression() (Expr, error) {
 func (p *Parser) equality() (Expr, error) {
     expr, err := p.comparison()
     if err != nil {
-        return Expr{}, err
+        return nil, err
     }
 
     for p.match(BANG_EQUAL, EQUAL_EQUAL) {
         operator := p.previous()
         right, err := p.comparison()
         if err != nil {
-            return Expr{}, err
+            return nil, err
         }
         expr = NewBinary(expr, operator, right)
     }
@@ -55,14 +66,14 @@ func (p *Parser) equality() (Expr, error) {
 func (p *Parser) comparison() (Expr, error) {
     expr, err := p.term()
     if err != nil {
-        return Expr{}, err
+        return nil, err
     }
 
     for p.match(GREAT, GREAT_EQUAL, LESS, LESS_EQUAL) {
         operator := p.previous()
         right, err := p.term()
         if err != nil {
-            return Expr{}, err
+            return nil, err
         }
         expr = NewBinary(expr, operator, right)
     }
@@ -74,14 +85,14 @@ func (p *Parser) comparison() (Expr, error) {
 func (p *Parser) term() (Expr, error) {
     expr, err := p.factor()
     if err != nil {
-        return Expr{}, err
+        return nil, err
     }
 
     for p.match(MINUS, PLUS) {
         operator := p.previous()
         right, err := p.factor()
         if err != nil {
-            return Expr{}, err
+            return nil, err
         }
         expr = NewBinary(expr, operator, right)
     }
@@ -93,14 +104,14 @@ func (p *Parser) term() (Expr, error) {
 func (p *Parser) factor() (Expr, error) {
     expr, err := p.unary()
     if err != nil {
-        return Expr{}, err
+        return nil, err
     }
 
     for p.match(SLASH, STAR) {
         operator := p.previous()
         right, err := p.unary()
         if err != nil {
-            return Expr{}, err
+            return nil, err
         }
         expr = NewBinary(expr, operator, right)
     }
@@ -114,7 +125,7 @@ func (p *Parser) unary() (Expr, error) {
         operator := p.previous()
         right, err := p.unary()
         if err != nil {
-            return Expr{}, err 
+            return nil, err 
         }
         return NewUnary(operator, right), err
     }
@@ -125,21 +136,27 @@ func (p *Parser) unary() (Expr, error) {
 // RULE primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 func (p *Parser) primary() (Expr, error) {
     switch {
-    case match(FALSE):
+    case p.match(FALSE):
         return NewLiteral(false), nil
-    case match(TRUE):
+    case p.match(TRUE):
         return NewLiteral(true), nil
-    case match(NIL):
+    case p.match(NIL):
         return NewLiteral(nil), nil
-    case match(NUMBER, STRING):
+    case p.match(NUMBER, STRING):
         return NewLiteral(p.previous().Literal), nil
-    case match(LEFT_PAREN):
-        expr := expression()
-        consume(RIGHT_PAREN, "Expect ')' after expression.")
+    case p.match(LEFT_PAREN):
+        expr, err := p.expression()
+        if err != nil {
+            return nil, err
+        }
+        _, err = p.consume(RIGHT_PAREN, "Expect ')' after expression.")
+        if err != nil {
+            return nil, err
+        }
         return NewGrouping(expr), nil
     }
 
-    return Expr{}, err(p.peek(), "Expect expression.")
+    return nil, err(p.peek(), "Expect expression.")
 }
 
 // function to check if the current token is any of the passed in types
@@ -155,12 +172,12 @@ func (p *Parser) match(types ...TokenType) bool {
     return false
 }
 
-func (p *Parser) consume(ttype TokenType, msg string) {
+func (p *Parser) consume(ttype TokenType, msg string) (Token, error) {
     if p.check(ttype) {
-        return p.advance()
+        return p.advance(), nil
     }
 
-    err(p.peek(), msg)
+    return Token{}, err(p.peek(), msg)
 }
 
 // function to check if the given type matches the current token's type
@@ -193,11 +210,14 @@ func (p *Parser) peek() Token {
 
 // function to return the most recently consumed token (position = p.cur - 1)
 func (p *Parser) previous() Token {
+    if (p.curr == 0) {
+        return Token{}
+    }
     return p.tokens[p.curr - 1]
 }
 
 func err(token Token, msg string) error {
-    Error(token, msg)
+    TokenError(token, msg)
     return &ParseError{token, msg}
 }
 

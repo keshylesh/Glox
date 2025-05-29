@@ -7,7 +7,8 @@ import (
     "io"
     "glox/util"
     "glox/scanner"
-    // "glox/ast"
+    "glox/ast"
+    "glox/parser"
     // "glox/token"
 )
 
@@ -51,8 +52,14 @@ func runPrompt() {
 func run(src string) {
     scan := scanner.NewScanner(src)
     tokens := scan.ScanTokens()
-    for _, token := range tokens {
-        fmt.Println(token)
+    parse := parser.NewParser(tokens)
+    expr := parse.Parse()
+
+    if (util.HadError) {
+        return
     }
+
+    var a ast.AstPrinter
+    fmt.Println(a.Print(expr))
 }
 

@@ -37,7 +37,6 @@ func (a AstPrinter) VisitUnary(expr Unary) Object {
     return a.parenthesize(expr.operator.Lexeme, expr.right)
 }
 
-
 // Function to enclose parameters in brackets for ordering
 func (a AstPrinter) parenthesize(name string, exprs ...Expr) string {
     ret := "(" + name
