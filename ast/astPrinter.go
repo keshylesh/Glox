@@ -18,23 +18,23 @@ func (a AstPrinter) Print(expr Expr) string {
 // Defintions for visitor functions
 
 func (a AstPrinter) VisitBinary(expr Binary) (Object, error) {
-    return a.parenthesize(expr.operator.Lexeme, expr.left, expr.right), nil
+    return a.parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right), nil
 }
 
 func (a AstPrinter) VisitGrouping(expr Grouping) (Object, error) {
-    return a.parenthesize("group", expr.expression), nil
+    return a.parenthesize("group", expr.Expression), nil
 }
 
 func (a AstPrinter) VisitLiteral(expr Literal) (Object, error) {
-    if expr.value == nil {
+    if expr.Value == nil {
         return "nil", nil
     }
-    ret := fmt.Sprintf("%v", expr.value)
+    ret := fmt.Sprintf("%v", expr.Value)
     return ret, nil
 }
 
 func (a AstPrinter) VisitUnary(expr Unary) (Object, error) {
-    return a.parenthesize(expr.operator.Lexeme, expr.right), nil
+    return a.parenthesize(expr.Operator.Lexeme, expr.Right), nil
 }
 
 // Function to enclose parameters in brackets for ordering

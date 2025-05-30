@@ -51,7 +51,7 @@ func defineAst(outputDir, baseName string, rules map[string][]string) {
 
     // create the base class, usually Expr
     fp.WriteString("type " + baseName + " interface{\n")
-    fp.WriteString("\tAccept(v visitor) Object\n")
+    fp.WriteString("\tAccept(v Visitor) Object\n")
     fp.WriteString("}\n\n")
 
     // create all the types
@@ -107,7 +107,8 @@ func defineType(fp *os.File, baseName, className string, fields []string) {
     fp.WriteString("}\n}\n\n")
 
     // write accept
-    fp.WriteString("func (obj " + className + ") Accept(v visitor) Object {\n")
-    fp.WriteString("\treturn v.Visit" + className + "(obj)\n")
+    fp.WriteString("func (obj " + className + ") Accept(v Visitor) Object {\n")
+    fp.WriteString("\tret, _ := v.Visit" + className + "(obj)\n")
+    fp.WriteString("\treturn ret\n")
     fp.WriteString("}\n\n")
 }
