@@ -62,10 +62,10 @@ func defineAst(outputDir, baseName string, rules map[string][]string) {
 
 // Function to create the visitor interface and all the functions to implement
 func defineVisitor(fp *os.File, baseName string, rules map[string][]string) {
-    fp.WriteString("type visitor interface {\n")
+    fp.WriteString("type Visitor interface {\n")
     
     for className, _ := range rules {
-        fp.WriteString("\tVisit" + className + "(obj " + className + ") Object\n")
+        fp.WriteString("\tVisit" + className + "(obj " + className + ") (Object, error)\n")
     }
 
     fp.WriteString("}\n\n")

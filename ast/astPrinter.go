@@ -6,7 +6,7 @@ import (
 )
 
 type AstPrinter struct {
-    v visitor
+    v Visitor
 }
 
 // Function to pretty print a tree
@@ -17,24 +17,24 @@ func (a AstPrinter) Print(expr Expr) string {
 
 // Defintions for visitor functions
 
-func (a AstPrinter) VisitBinary(expr Binary) Object {
-    return a.parenthesize(expr.operator.Lexeme, expr.left, expr.right)
+func (a AstPrinter) VisitBinary(expr Binary) (Object, error) {
+    return a.parenthesize(expr.operator.Lexeme, expr.left, expr.right), nil
 }
 
-func (a AstPrinter) VisitGrouping(expr Grouping) Object {
-    return a.parenthesize("group", expr.expression)
+func (a AstPrinter) VisitGrouping(expr Grouping) (Object, error) {
+    return a.parenthesize("group", expr.expression), nil
 }
 
-func (a AstPrinter) VisitLiteral(expr Literal) Object {
+func (a AstPrinter) VisitLiteral(expr Literal) (Object, error) {
     if expr.value == nil {
-        return "nil"
+        return "nil", nil
     }
     ret := fmt.Sprintf("%v", expr.value)
-    return ret
+    return ret, nil
 }
 
-func (a AstPrinter) VisitUnary(expr Unary) Object {
-    return a.parenthesize(expr.operator.Lexeme, expr.right)
+func (a AstPrinter) VisitUnary(expr Unary) (Object, error) {
+    return a.parenthesize(expr.operator.Lexeme, expr.right), nil
 }
 
 // Function to enclose parameters in brackets for ordering

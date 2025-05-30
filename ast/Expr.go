@@ -5,11 +5,11 @@ import (
 	. "glox/util"
 )
 
-type visitor interface {
-	VisitUnary(obj Unary) Object
-	VisitBinary(obj Binary) Object
-	VisitGrouping(obj Grouping) Object
-	VisitLiteral(obj Literal) Object
+type Visitor interface {
+	VisitBinary(obj Binary) (Object, error)
+	VisitGrouping(obj Grouping) (Object, error)
+	VisitLiteral(obj Literal) (Object, error)
+	VisitUnary(obj Unary) (Object, error)
 }
 
 type Expr interface{
