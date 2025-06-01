@@ -5,8 +5,9 @@ import (
     "os"
 )
 
-// Global var used to stop line/program from being run
+// Global vars used to stop line/program from being run
 var HadError bool = false
+var HadRuntimeError bool = false
 
 // Panics when encountering an error
 func Check(e error) {

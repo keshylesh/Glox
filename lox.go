@@ -7,10 +7,12 @@ import (
     "io"
     "glox/util"
     "glox/scanner"
-    "glox/ast"
     "glox/parser"
+    "glox/interpreter"
     // "glox/token"
 )
+
+var interpret interpreter.Interpreter
 
 func main() {
     if len(os.Args) > 2 {
@@ -30,6 +32,9 @@ func runFile(path string) {
     run(string(data))
     if util.HadError {
         os.Exit(65)
+    }
+    if util.HadRuntimeError {
+        os.Exit(70)
     }
 }
 
@@ -59,7 +64,6 @@ func run(src string) {
         return
     }
 
-    var a ast.AstPrinter
-    fmt.Println(a.Print(expr))
+    interpret.Interpret(expr)
 }
 

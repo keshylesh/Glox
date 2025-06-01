@@ -11,7 +11,7 @@ type AstPrinter struct {
 
 // Function to pretty print a tree
 func (a AstPrinter) Print(expr Expr) string {
-    ret := expr.Accept(a)
+    ret, _ := expr.Accept(a)
     return ret.(string)
 }
 
@@ -42,7 +42,8 @@ func (a AstPrinter) parenthesize(name string, exprs ...Expr) string {
     ret := "(" + name
     for _, expr := range exprs {
         ret += " "
-        temp := fmt.Sprintf("%v", expr.Accept(a))
+        val, _ := expr.Accept(a)
+        temp := fmt.Sprintf("%v", val)
         ret += temp
     }
     ret += ")"
