@@ -140,6 +140,7 @@ func (s *Scanner) string() {
 
     if s.isAtEnd() {
         Error(s.line, "Unterminated string.")
+        return
     }
 
     // Eat closing quote
