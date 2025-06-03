@@ -5,7 +5,7 @@ import (
 	. "glox/util"
 )
 
-type Visitor interface {
+type ExprVisitor interface {
 	VisitBinary(obj Binary) (Object, error)
 	VisitGrouping(obj Grouping) (Object, error)
 	VisitLiteral(obj Literal) (Object, error)
@@ -13,7 +13,7 @@ type Visitor interface {
 }
 
 type Expr interface{
-	Accept(v Visitor) (Object, error)
+	Accept(v ExprVisitor) (Object, error)
 }
 
 type Binary struct {
@@ -26,7 +26,7 @@ func NewBinary(Left Expr, Operator Token, Right Expr) Binary {
 	return Binary{Left, Operator, Right,}
 }
 
-func (obj Binary) Accept(v Visitor) (Object, error) {
+func (obj Binary) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitBinary(obj)
 }
 
@@ -38,7 +38,7 @@ func NewGrouping(Expression Expr) Grouping {
 	return Grouping{Expression,}
 }
 
-func (obj Grouping) Accept(v Visitor) (Object, error) {
+func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitGrouping(obj)
 }
 
@@ -50,7 +50,7 @@ func NewLiteral(Value Object) Literal {
 	return Literal{Value,}
 }
 
-func (obj Literal) Accept(v Visitor) (Object, error) {
+func (obj Literal) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitLiteral(obj)
 }
 
@@ -63,7 +63,7 @@ func NewUnary(Operator Token, Right Expr) Unary {
 	return Unary{Operator, Right,}
 }
 
-func (obj Unary) Accept(v Visitor) (Object, error) {
+func (obj Unary) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitUnary(obj)
 }
 

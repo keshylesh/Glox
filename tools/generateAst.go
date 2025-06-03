@@ -15,14 +15,18 @@ func main() {
         os.Exit(64)
     }
     outputDir := os.Args[1]
-    // list of class names and fields corresponding to them
-    rules := map[string][]string {
+
+    defineAst(outputDir, "Expr", map[string][]string {
         "Binary": {"Left Expr", "Operator Token", "Right Expr"},
         "Grouping": {"Expression Expr"},
         "Literal": {"Value Object"},
         "Unary": {"Operator Token", "Right Expr"},
-    }
-    defineAst(outputDir, "Expr", rules)
+    })
+    
+    defineAst(outputDir, "Stmt", map[string][]string {
+        "StmtExpression": {"Expression Expr"},
+        "Print": {"Expression Expr"},
+    })
 }
 
 // Function to create the Abstract Syntax Tree
@@ -40,18 +44,27 @@ func defineAst(outputDir, baseName string, rules map[string][]string) {
     // package name
     fp.WriteString("package " + outputDir + "\n\n")
 
-    // imports
-    fp.WriteString("import (\n")
-    fp.WriteString("\t. \"glox/token\"\n")
-    fp.WriteString("\t. \"glox/util\"\n")
-    fp.WriteString(")\n\n")
+    // Some unfortunate hardcoding to satisfy the go gods
+    if (baseName == "Expr") {
+        // imports
+        fp.WriteString("import (\n")
+        fp.WriteString("\t. \"glox/token\"\n")
+        fp.WriteString("\t. \"glox/util\"\n")
+        fp.WriteString(")\n\n")
 
+    } else if (baseName == "Stmt") {
+        // imports
+        fp.WriteString("import (\n")
+        fp.WriteString("\t. \"glox/util\"\n")
+        fp.WriteString(")\n\n")
+    }
     // create visitor interface
     defineVisitor(fp, baseName, rules)
 
-    // create the base class, usually Expr
+
+    // create the base class
     fp.WriteString("type " + baseName + " interface{\n")
-    fp.WriteString("\tAccept(v Visitor) (Object, error)\n")
+    fp.WriteString("\tAccept(v " + baseName + "Visitor) (Object, error)\n")
     fp.WriteString("}\n\n")
 
     // create all the types
@@ -62,7 +75,7 @@ func defineAst(outputDir, baseName string, rules map[string][]string) {
 
 // Function to create the visitor interface and all the functions to implement
 func defineVisitor(fp *os.File, baseName string, rules map[string][]string) {
-    fp.WriteString("type Visitor interface {\n")
+    fp.WriteString("type " + baseName + "Visitor interface {\n")
     
     for className, _ := range rules {
         fp.WriteString("\tVisit" + className + "(obj " + className + ") (Object, error)\n")
@@ -107,7 +120,7 @@ func defineType(fp *os.File, baseName, className string, fields []string) {
     fp.WriteString("}\n}\n\n")
 
     // write accept
-    fp.WriteString("func (obj " + className + ") Accept(v Visitor) (Object, error) {\n")
+    fp.WriteString("func (obj " + className + ") Accept(v " + baseName + "Visitor) (Object, error) {\n")
     fp.WriteString("\treturn v.Visit" + className + "(obj)\n")
     fp.WriteString("}\n\n")
 }

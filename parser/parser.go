@@ -4,8 +4,8 @@ import (
     . "glox/util"
     . "glox/token"
     . "glox/ast"
-    "errors"
     "fmt"
+    "errors"
 )
 
 type Parser struct {
@@ -27,20 +27,56 @@ func NewParser(tokens []Token) *Parser {
     return &Parser{tokens, 0}
 }
 
-func (p *Parser) Parse() Expr {
-    ret, err := p.expression()
+func (p *Parser) Parse() []Stmt {
+    var ret []Stmt
     var pe *ParseError
-    if errors.As(err, &pe) {
-        return nil
-    } else if err == nil {
-        return ret
+    for !p.isAtEnd() {
+        val, err := p.statement()
+        if errors.As(err, &pe) {
+            return nil
+        }
+        ret = append(ret, val)
     }
-    return nil
+
+    return ret
 }
 
 // RULE expression: equality
 func (p *Parser) expression() (Expr, error) {
     return p.equality()
+}
+
+// RULE statement: exprStmt | printStmt
+func (p *Parser) statement() (Stmt, error) {
+    if p.match(PRINT) {
+        return p.printStmt()
+    }
+
+    return p.exprStmt()
+}
+
+func (p *Parser) printStmt() (Stmt, error) {
+    val, err := p.expression()
+    if err != nil {
+        return nil, err
+    }
+    _, err = p.consume(SEMICOLON, "Expect ';' after value")
+    if err != nil {
+        return nil, err
+    }
+    return NewPrint(val), nil
+}
+
+func (p *Parser) exprStmt() (Stmt, error) {
+    expr, err := p.expression()
+    if err != nil {
+        return nil, err
+    }
+    _, err = p.consume(SEMICOLON, "Expect ';' after value")
+    if err != nil {
+        return nil, err
+    }
+    return NewStmtExpression(expr), nil
 }
 
 // RULE equality: comparison ( ( "!=" | "==" ) comparison )*

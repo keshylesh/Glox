@@ -58,12 +58,12 @@ func run(src string) {
     scan := scanner.NewScanner(src)
     tokens := scan.ScanTokens()
     parse := parser.NewParser(tokens)
-    expr := parse.Parse()
+    statements := parse.Parse()
 
     if (util.HadError) {
         return
     }
 
-    interpret.Interpret(expr)
+    interpret.Interpret(statements)
 }
 

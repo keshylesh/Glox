@@ -1,7 +1,10 @@
 gb = go build
 gg = go generate
 gr = go run
-DEPS = lox.go scanner/*.go token/*.go util/*.go parser/*.go interpreter/*.go ast/Expr.go
+define DEPS
+lox.go scanner/*.go token/*.go util/*.go 
+parser/*.go interpreter/*.go ast/*.go
+endef
 GEN = util/tokentype_string.go ast/Expr.go glox
 
 .PHONY: all

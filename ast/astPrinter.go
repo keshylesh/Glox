@@ -6,7 +6,7 @@ import (
 )
 
 type AstPrinter struct {
-    v Visitor
+    v ExprVisitor
 }
 
 // Function to pretty print a tree

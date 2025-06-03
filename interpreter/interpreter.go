@@ -26,17 +26,19 @@ func ErrorRuntime(error RuntimeError) {
 
 
 type Interpreter struct {
-    v Visitor
+    ev ExprVisitor
+    sv StmtVisitor
 }
 
-func (i Interpreter) Interpret(expression Expr) {
-    val, err := i.evaluate(expression)
-    var re *RuntimeError
-    if errors.As(err, &re) {
-        ErrorRuntime(*re)
-        return
+func (i Interpreter) Interpret(statements []Stmt) {
+    for _, statement := range statements {
+        err := i.execute(statement)
+        var re *RuntimeError
+        if errors.As(err, &re) {
+            ErrorRuntime(*re)
+            return
+        }
     }
-    fmt.Println(stringify(val))
 }
 
 func (i Interpreter) VisitLiteral(expr Literal) (Object, error) {
@@ -159,6 +161,25 @@ func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
 
 func (i Interpreter) evaluate(expr Expr) (Object, error) {
     return expr.Accept(i)
+}
+
+func (i Interpreter) execute(stmt Stmt) error {
+    _, err := stmt.Accept(i)
+    return err
+}
+
+func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (Object, error) {
+    _, err := i.evaluate(stmt.Expression)
+    return nil, err
+}
+
+func (i Interpreter) VisitPrint(stmt Print) (Object, error) {
+    val, err := i.evaluate(stmt.Expression)
+    if err == nil {
+        fmt.Println(stringify(val))
+    }
+
+    return nil, err
 }
 
 func isTruthy(obj Object) bool {
