@@ -1,2 +1,4 @@
 glox
 *_test.go
+util/getLine.go
+go.sum

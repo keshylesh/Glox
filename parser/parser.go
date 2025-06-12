@@ -31,7 +31,7 @@ func (p *Parser) Parse() []Stmt {
     var ret []Stmt
     var pe *ParseError
     for !p.isAtEnd() {
-        val, err := p.statement()
+        val, err := p.declaration()
         if errors.As(err, &pe) {
             return nil
         }
@@ -44,6 +44,25 @@ func (p *Parser) Parse() []Stmt {
 // RULE expression: equality
 func (p *Parser) expression() (Expr, error) {
     return p.equality()
+}
+
+// RULE declaration: varDecl | statement
+func (p *Parser) declaration() (Stmt, error) {
+    if p.match(VAR) {
+        ret, err := p.varDecl()
+        if err != nil {
+            p.synchronize()
+            return nil, err
+        }
+        return ret, nil
+    }
+
+    ret, err := p.statement()
+    if err != nil {
+        p.synchronize()
+        return nil, err
+    }
+    return ret, nil
 }
 
 // RULE statement: exprStmt | printStmt
@@ -65,6 +84,27 @@ func (p *Parser) printStmt() (Stmt, error) {
         return nil, err
     }
     return NewPrint(val), nil
+}
+
+func (p *Parser) varDecl() (Stmt, error) {
+    name, err := p.consume(IDENTIFIER, "Expect variable name")
+    if err != nil {
+        return nil, err
+    }
+
+    var initializer Expr = nil
+    if p.match(EQUAL) {
+        initializer, err = p.expression()
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    _, err = p.consume(SEMICOLON, "Expect ';' after variable declaration")
+    if err != nil {
+        return nil, err
+    }
+    return NewVar(name, initializer), nil
 }
 
 func (p *Parser) exprStmt() (Stmt, error) {
@@ -180,6 +220,8 @@ func (p *Parser) primary() (Expr, error) {
         return NewLiteral(nil), nil
     case p.match(NUMBER, STRING):
         return NewLiteral(p.previous().Literal), nil
+    case p.match(IDENTIFIER):
+        return NewVariable(p.previous()), nil
     case p.match(LEFT_PAREN):
         expr, err := p.expression()
         if err != nil {

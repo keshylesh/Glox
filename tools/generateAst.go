@@ -21,11 +21,13 @@ func main() {
         "Grouping": {"Expression Expr"},
         "Literal": {"Value Object"},
         "Unary": {"Operator Token", "Right Expr"},
+        "Variable": {"Name Token"},
     })
     
     defineAst(outputDir, "Stmt", map[string][]string {
         "StmtExpression": {"Expression Expr"},
         "Print": {"Expression Expr"},
+        "Var": {"Name Token", "Initializer Expr"},
     })
 }
 
@@ -55,6 +57,7 @@ func defineAst(outputDir, baseName string, rules map[string][]string) {
     } else if (baseName == "Stmt") {
         // imports
         fp.WriteString("import (\n")
+        fp.WriteString("\t. \"glox/token\"\n")
         fp.WriteString("\t. \"glox/util\"\n")
         fp.WriteString(")\n\n")
     }

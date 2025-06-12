@@ -1,16 +1,30 @@
 package ast
 
 import (
+	. "glox/token"
 	. "glox/util"
 )
 
 type StmtVisitor interface {
 	VisitStmtExpression(obj StmtExpression) (Object, error)
 	VisitPrint(obj Print) (Object, error)
+	VisitVar(obj Var) (Object, error)
 }
 
 type Stmt interface{
 	Accept(v StmtVisitor) (Object, error)
+}
+
+type StmtExpression struct {
+	Expression Expr
+}
+
+func NewStmtExpression(Expression Expr) StmtExpression {
+	return StmtExpression{Expression,}
+}
+
+func (obj StmtExpression) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitStmtExpression(obj)
 }
 
 type Print struct {
@@ -25,15 +39,16 @@ func (obj Print) Accept(v StmtVisitor) (Object, error) {
 	return v.VisitPrint(obj)
 }
 
-type StmtExpression struct {
-	Expression Expr
+type Var struct {
+	Name Token
+	Initializer Expr
 }
 
-func NewStmtExpression(Expression Expr) StmtExpression {
-	return StmtExpression{Expression,}
+func NewVar(Name Token, Initializer Expr) Var {
+	return Var{Name, Initializer,}
 }
 
-func (obj StmtExpression) Accept(v StmtVisitor) (Object, error) {
-	return v.VisitStmtExpression(obj)
+func (obj Var) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitVar(obj)
 }
 

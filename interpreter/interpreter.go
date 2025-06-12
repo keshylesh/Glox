@@ -4,23 +4,15 @@ import (
     . "glox/ast"
     . "glox/token"
     . "glox/util"
+    . "glox/environment"
     "reflect"
     "fmt"
     "errors"
     "os"
 )
 
-type RuntimeError struct {
-    token Token
-    msg string
-}
-
-func (e *RuntimeError) Error() string {
-    return fmt.Sprintf("%v - %v", e.token, e.msg)
-}
-
 func ErrorRuntime(error RuntimeError) {
-    fmt.Fprintf(os.Stderr, "%v\n[line %v]\n", error.msg, error.token.Line)
+    fmt.Fprintf(os.Stderr, "%v\n[line %v]\n", error.Msg, error.Token.Line)
     HadRuntimeError = true
 }
 
@@ -28,6 +20,11 @@ func ErrorRuntime(error RuntimeError) {
 type Interpreter struct {
     ev ExprVisitor
     sv StmtVisitor
+    env Environment
+}
+
+func NewInterpreter() Interpreter {
+    return Interpreter{env: NewEnvironment()}
 }
 
 func (i Interpreter) Interpret(statements []Stmt) {
@@ -67,6 +64,10 @@ func (i Interpreter) VisitUnary(expr Unary) (Object, error) {
     }
 
     return nil, nil
+}
+
+func (i Interpreter) VisitVariable(expr Variable) (Object, error) {
+    return i.env.Get(expr.Name)
 }
 
 func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
@@ -180,6 +181,20 @@ func (i Interpreter) VisitPrint(stmt Print) (Object, error) {
     }
 
     return nil, err
+}
+
+func (i Interpreter) VisitVar(stmt Var) (Object, error) {
+    var val Object = nil
+    if stmt.Initializer != nil {
+        value, err := i.evaluate(stmt.Initializer)
+        val = value
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    i.env.Define(stmt.Name.Lexeme, val)
+    return nil, nil
 }
 
 func isTruthy(obj Object) bool {

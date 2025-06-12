@@ -12,7 +12,7 @@ import (
     // "glox/token"
 )
 
-var interpret interpreter.Interpreter
+var interpret interpreter.Interpreter = interpreter.NewInterpreter()
 
 func main() {
     if len(os.Args) > 2 {
@@ -44,6 +44,7 @@ func runPrompt() {
     for {
         fmt.Printf("> ")
         line, err := reader.ReadString('\n')
+        // line, err := util.GetLine()
         if err == io.EOF {
             break
         }
