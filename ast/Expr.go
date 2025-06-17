@@ -6,6 +6,7 @@ import (
 )
 
 type ExprVisitor interface {
+	VisitAssign(obj Assign) (Object, error)
 	VisitBinary(obj Binary) (Object, error)
 	VisitGrouping(obj Grouping) (Object, error)
 	VisitLiteral(obj Literal) (Object, error)
@@ -17,29 +18,17 @@ type Expr interface{
 	Accept(v ExprVisitor) (Object, error)
 }
 
-type Unary struct {
-	Operator Token
-	Right Expr
-}
-
-func NewUnary(Operator Token, Right Expr) Unary {
-	return Unary{Operator, Right,}
-}
-
-func (obj Unary) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitUnary(obj)
-}
-
-type Variable struct {
+type Assign struct {
 	Name Token
+	Value Expr
 }
 
-func NewVariable(Name Token) Variable {
-	return Variable{Name,}
+func NewAssign(Name Token, Value Expr) Assign {
+	return Assign{Name, Value,}
 }
 
-func (obj Variable) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitVariable(obj)
+func (obj Assign) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitAssign(obj)
 }
 
 type Binary struct {
@@ -78,5 +67,30 @@ func NewLiteral(Value Object) Literal {
 
 func (obj Literal) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitLiteral(obj)
+}
+
+type Unary struct {
+	Operator Token
+	Right Expr
+}
+
+func NewUnary(Operator Token, Right Expr) Unary {
+	return Unary{Operator, Right,}
+}
+
+func (obj Unary) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitUnary(obj)
+}
+
+type Variable struct {
+	Name Token
+}
+
+func NewVariable(Name Token) Variable {
+	return Variable{Name,}
+}
+
+func (obj Variable) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitVariable(obj)
 }
 

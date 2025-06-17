@@ -41,11 +41,6 @@ func (p *Parser) Parse() []Stmt {
     return ret
 }
 
-// RULE expression: equality
-func (p *Parser) expression() (Expr, error) {
-    return p.equality()
-}
-
 // RULE declaration: varDecl | statement
 func (p *Parser) declaration() (Stmt, error) {
     if p.match(VAR) {
@@ -117,6 +112,40 @@ func (p *Parser) exprStmt() (Stmt, error) {
         return nil, err
     }
     return NewStmtExpression(expr), nil
+}
+
+// RULE expression: assignment
+func (p *Parser) expression() (Expr, error) {
+    return p.assignment()
+}
+
+// RULE assignment: IDENTIFIER "=" assignment | equality
+func (p *Parser) assignment() (Expr, error) {
+    expr, error := p.equality()
+    if error != nil {
+        return nil, error
+    }
+
+    if p.match(EQUAL) {
+        switch expr.(type) {
+        case Variable:
+            value, err := p.assignment()
+            if err != nil {
+                return nil, err
+            }
+            name := expr.(Variable).Name
+            return NewAssign(name, value), nil
+        default:
+            equals := p.previous()
+            _, error := p.assignment()
+            if error != nil {
+                return nil, error
+            }
+            return nil, err(equals, "Invalid assignment target")
+        }
+    }
+
+    return expr, nil 
 }
 
 // RULE equality: comparison ( ( "!=" | "==" ) comparison )*
@@ -209,7 +238,7 @@ func (p *Parser) unary() (Expr, error) {
     return p.primary()
 }
 
-// RULE primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+// RULE primary: NUMBER | STRING | "true" | "false" | "nil" | VARIABLE |"(" expression ")"
 func (p *Parser) primary() (Expr, error) {
     switch {
     case p.match(FALSE):

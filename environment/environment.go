@@ -35,3 +35,12 @@ func (e Environment) Get(name Token) (Object, error) {
     return nil, &RuntimeError{name, "Undefined variable '" + name.Lexeme + "'"}
 }
 
+func (e Environment) Assign(name Token, value Object) error {
+    if _, ok := e.values[name.Lexeme]; ok {
+        e.values[name.Lexeme] = value
+        return nil
+    }
+    
+    return &RuntimeError{name, "Undefined variable '" + name.Lexeme + "'"}
+}
+

@@ -197,6 +197,15 @@ func (i Interpreter) VisitVar(stmt Var) (Object, error) {
     return nil, nil
 }
 
+func (i Interpreter) VisitAssign(expr Assign) (Object, error) {
+    value, err := i.evaluate(expr.Value)
+    if err != nil {
+        return nil, err
+    }
+    i.env.Assign(expr.Name, value)
+    return value, nil
+}
+
 func isTruthy(obj Object) bool {
     if obj == nil {
         return false

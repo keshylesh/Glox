@@ -6,9 +6,9 @@ import (
 )
 
 type StmtVisitor interface {
-	VisitStmtExpression(obj StmtExpression) (Object, error)
 	VisitPrint(obj Print) (Object, error)
 	VisitVar(obj Var) (Object, error)
+	VisitStmtExpression(obj StmtExpression) (Object, error)
 }
 
 type Stmt interface{
