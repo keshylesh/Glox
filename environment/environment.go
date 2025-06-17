@@ -23,7 +23,7 @@ type Environment struct {
 // Environment "constructor"
 func NewEnvironment(params ...*Environment) *Environment {
     //HACK: mimicing default values/overloading with variadic function
-    var enclosing *Environment = nil;
+    var enclosing *Environment = nil
     if len(params) > 0 {
         enclosing = params[0]
     }
@@ -58,7 +58,7 @@ func (e *Environment) Assign(name Token, value Object) error {
     }
 
     if e.enclosing != nil {
-        return e.enclosing.Get(name)
+        return e.enclosing.Assign(name, value)
     }
     
     return &RuntimeError{name, "Undefined variable '" + name.Lexeme + "'"}

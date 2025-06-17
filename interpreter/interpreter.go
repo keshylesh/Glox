@@ -173,6 +173,30 @@ func (i Interpreter) execute(stmt Stmt) error {
     return err
 }
 
+func (i Interpreter) executeBlock(statements []Stmt, env *Environment) error {
+    previous := i.env
+    i.env = env
+
+    for _, stmt := range statements {
+        err := i.execute(stmt)
+        if err != nil {
+            i.env = previous
+            return err
+        }
+    }
+
+    i.env = previous
+    return nil
+}
+
+func (i Interpreter) VisitBlock(stmt Block) (Object, error) {
+    err := i.executeBlock(stmt.Statements, NewEnvironment(i.env))
+    if err != nil {
+        return nil, err
+    }
+    return nil, nil
+}
+
 func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (Object, error) {
     _, err := i.evaluate(stmt.Expression)
     return nil, err

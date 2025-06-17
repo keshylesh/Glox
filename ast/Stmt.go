@@ -6,13 +6,26 @@ import (
 )
 
 type StmtVisitor interface {
+	VisitBlock(obj Block) (Object, error)
+	VisitStmtExpression(obj StmtExpression) (Object, error)
 	VisitPrint(obj Print) (Object, error)
 	VisitVar(obj Var) (Object, error)
-	VisitStmtExpression(obj StmtExpression) (Object, error)
 }
 
 type Stmt interface{
 	Accept(v StmtVisitor) (Object, error)
+}
+
+type Block struct {
+	Statements []Stmt
+}
+
+func NewBlock(Statements []Stmt) Block {
+	return Block{Statements,}
+}
+
+func (obj Block) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitBlock(obj)
 }
 
 type StmtExpression struct {

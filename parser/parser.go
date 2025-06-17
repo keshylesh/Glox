@@ -61,13 +61,39 @@ func (p *Parser) declaration() (Stmt, error) {
     return ret, nil
 }
 
-// RULE statement: exprStmt | printStmt
+// RULE statement: exprStmt | printStmt | block
 func (p *Parser) statement() (Stmt, error) {
     if p.match(PRINT) {
         return p.printStmt()
     }
+    if p.match(LEFT_BRACE) {
+        val, err := p.block()
+        if err != nil {
+            return nil, err
+        }
+        return NewBlock(val), nil
+    }
 
     return p.exprStmt()
+}
+
+// RULE block: "{" declaration* "}"
+func (p *Parser) block() ([]Stmt, error) {
+    var statements []Stmt
+
+    for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+        val, err := p.declaration()
+        if err != nil {
+            return nil, err
+        }
+        statements = append(statements, val)
+    }
+
+    _, err := p.consume(RIGHT_BRACE, "Expect '}' after block")
+    if err != nil {
+        return nil, err
+    }
+    return statements, nil
 }
 
 // RULE printStmt: "print" expression ";"
