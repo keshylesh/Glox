@@ -20,13 +20,15 @@ func ErrorRuntime(error RuntimeError) {
 type Interpreter struct {
     ev ExprVisitor
     sv StmtVisitor
-    env Environment
+    env *Environment
 }
 
+// Interpreter "constructor"
 func NewInterpreter() Interpreter {
     return Interpreter{env: NewEnvironment()}
 }
 
+// function to interpret a series fo statements
 func (i Interpreter) Interpret(statements []Stmt) {
     for _, statement := range statements {
         err := i.execute(statement)
@@ -37,6 +39,8 @@ func (i Interpreter) Interpret(statements []Stmt) {
         }
     }
 }
+
+// VISTITOR FUNCTIONS
 
 func (i Interpreter) VisitLiteral(expr Literal) (Object, error) {
     return expr.Value, nil
@@ -206,6 +210,8 @@ func (i Interpreter) VisitAssign(expr Assign) (Object, error) {
     return value, nil
 }
 
+
+// function to return whether an Object is a truth-like value
 func isTruthy(obj Object) bool {
     if obj == nil {
         return false
@@ -218,6 +224,7 @@ func isTruthy(obj Object) bool {
     }
 }
 
+// function to return whether two objects are equal
 func isEqual(x, y Object) bool {
     if x == nil && y == nil {
         return true
@@ -228,6 +235,7 @@ func isEqual(x, y Object) bool {
     return reflect.DeepEqual(x, y)
 }
 
+// function to turn an Object to a string representation
 func stringify(obj Object) string {
     if obj == nil {
         return "nil"
@@ -236,10 +244,12 @@ func stringify(obj Object) string {
     return fmt.Sprintf("%v", obj) 
 }
 
+// function to return the type of an Object
 func typeOf(obj Object) string {
     return reflect.TypeOf(obj).String()
 }
 
+// function to verify that the type of all objects are the passed in type
 func verifyType(match, eMsg string, operator Token, operands ...Object) error {
     for _, operand := range operands {
         if (typeOf(operand) != match) {

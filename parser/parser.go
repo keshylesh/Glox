@@ -27,6 +27,7 @@ func NewParser(tokens []Token) *Parser {
     return &Parser{tokens, 0}
 }
 
+// function to start parsing tokens
 func (p *Parser) Parse() []Stmt {
     var ret []Stmt
     var pe *ParseError
@@ -69,6 +70,7 @@ func (p *Parser) statement() (Stmt, error) {
     return p.exprStmt()
 }
 
+// RULE printStmt: "print" expression ";"
 func (p *Parser) printStmt() (Stmt, error) {
     val, err := p.expression()
     if err != nil {
@@ -81,6 +83,7 @@ func (p *Parser) printStmt() (Stmt, error) {
     return NewPrint(val), nil
 }
 
+// RULE "var" IDENTIFIER ( "=" expression )? ";"
 func (p *Parser) varDecl() (Stmt, error) {
     name, err := p.consume(IDENTIFIER, "Expect variable name")
     if err != nil {
@@ -102,6 +105,7 @@ func (p *Parser) varDecl() (Stmt, error) {
     return NewVar(name, initializer), nil
 }
 
+// RULE exprStmt: expression ";"
 func (p *Parser) exprStmt() (Stmt, error) {
     expr, err := p.expression()
     if err != nil {
@@ -238,7 +242,7 @@ func (p *Parser) unary() (Expr, error) {
     return p.primary()
 }
 
-// RULE primary: NUMBER | STRING | "true" | "false" | "nil" | VARIABLE |"(" expression ")"
+// RULE primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
 func (p *Parser) primary() (Expr, error) {
     switch {
     case p.match(FALSE):
@@ -323,11 +327,13 @@ func (p *Parser) previous() Token {
     return p.tokens[p.curr - 1]
 }
 
+// return error
 func err(token Token, msg string) error {
     TokenError(token, msg)
     return &ParseError{token, msg}
 }
 
+// function to go into panic mode and try to recover
 func (p *Parser) synchronize() {
     p.advance()
 
