@@ -6,40 +6,16 @@ import (
 )
 
 type StmtVisitor interface {
-	VisitBlock(obj Block) (Object, error)
 	VisitStmtExpression(obj StmtExpression) (Object, error)
 	VisitIf(obj If) (Object, error)
 	VisitPrint(obj Print) (Object, error)
 	VisitVar(obj Var) (Object, error)
+	VisitWhile(obj While) (Object, error)
+	VisitBlock(obj Block) (Object, error)
 }
 
 type Stmt interface{
 	Accept(v StmtVisitor) (Object, error)
-}
-
-type Var struct {
-	Name Token
-	Initializer Expr
-}
-
-func NewVar(Name Token, Initializer Expr) Var {
-	return Var{Name, Initializer,}
-}
-
-func (obj Var) Accept(v StmtVisitor) (Object, error) {
-	return v.VisitVar(obj)
-}
-
-type Block struct {
-	Statements []Stmt
-}
-
-func NewBlock(Statements []Stmt) Block {
-	return Block{Statements,}
-}
-
-func (obj Block) Accept(v StmtVisitor) (Object, error) {
-	return v.VisitBlock(obj)
 }
 
 type StmtExpression struct {
@@ -78,5 +54,43 @@ func NewPrint(Expression Expr) Print {
 
 func (obj Print) Accept(v StmtVisitor) (Object, error) {
 	return v.VisitPrint(obj)
+}
+
+type Var struct {
+	Name Token
+	Initializer Expr
+}
+
+func NewVar(Name Token, Initializer Expr) Var {
+	return Var{Name, Initializer,}
+}
+
+func (obj Var) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitVar(obj)
+}
+
+type While struct {
+	Condition Expr
+	Body Stmt
+}
+
+func NewWhile(Condition Expr, Body Stmt) While {
+	return While{Condition, Body,}
+}
+
+func (obj While) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitWhile(obj)
+}
+
+type Block struct {
+	Statements []Stmt
+}
+
+func NewBlock(Statements []Stmt) Block {
+	return Block{Statements,}
+}
+
+func (obj Block) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitBlock(obj)
 }
 

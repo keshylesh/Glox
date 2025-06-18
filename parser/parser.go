@@ -61,13 +61,19 @@ func (p *Parser) declaration() (Stmt, error) {
     return ret, nil
 }
 
-// RULE statement: exprStmt | ifStmt | printStmt | block
+// RULE statement: exprStmt | forStmt | ifStmt | printStmt | whileStmt | block
 func (p *Parser) statement() (Stmt, error) {
+    if p.match(FOR) {
+        return p.forStmt()
+    }
     if p.match(IF) {
         return p.ifStmt()
     }
     if p.match(PRINT) {
         return p.printStmt()
+    }
+    if p.match(WHILE) {
+        return p.whileStmt()
     }
     if p.match(LEFT_BRACE) {
         val, err := p.block()
@@ -76,6 +82,77 @@ func (p *Parser) statement() (Stmt, error) {
     }
 
     return p.exprStmt()
+}
+
+// RULE forStmt: "for" "(" ( varDecl | exprStmt | ";" )
+//               expression? ";" expression? ")" statement
+func (p *Parser) forStmt() (Stmt, error) {
+    _, err := p.consume(LEFT_PAREN, "Exprect '(' after for")
+    if err != nil { return nil, err }
+
+    var initializer Stmt
+    if p.match(SEMICOLON) {
+        initializer = nil
+    } else if p.match(VAR) {
+        initializer, err = p.varDecl()
+        if err != nil { return nil, err }
+    } else {
+        initializer, err = p.exprStmt()
+        if err != nil { return nil, err }
+    }
+
+    var condition Expr = nil
+    if !p.check(SEMICOLON) {
+        condition, err = p.expression()
+        if err != nil { return nil, err }
+    }
+
+    _, err = p.consume(SEMICOLON, "Expect ';' after loop condition")
+    if err != nil { return nil, err }
+
+    var increment Expr = nil
+    if !p.check(RIGHT_PAREN) {
+        increment, err = p.expression()
+        if err != nil { return nil, err }
+    }
+
+    _, err = p.consume(RIGHT_PAREN, "Expect ')' after for clauses")
+    if err != nil { return nil, err }
+
+    body, err := p.statement()
+    if err != nil { return nil, err }
+
+    if increment != nil {
+        body = NewBlock( []Stmt{body, NewStmtExpression(increment)} )
+    }
+
+    if condition == nil {
+        condition = NewLiteral(true)
+    }
+    body = NewWhile(condition, body)
+
+    if initializer != nil {
+        body = NewBlock( []Stmt{initializer, body} )
+    }
+
+    return body, nil
+}
+
+// RULE whileStmt: "while" "(" expression ")" statement
+func (p *Parser) whileStmt() (Stmt, error) {
+    _, err := p.consume(LEFT_PAREN, "Exprect '(' after while")
+    if err != nil { return nil, err }
+
+    condition, err := p.expression()
+    if err != nil { return nil, err }
+
+    _, err = p.consume(RIGHT_PAREN, "Expect ')' after condition")
+    if err != nil { return nil, err }
+
+    body, err := p.statement()
+    if err != nil { return nil, err }
+
+    return NewWhile(condition, body), nil
 }
 
 // RULE ifStmt: "if" "(" expression ")" statement ( "else" statement )?
@@ -190,28 +267,28 @@ func (p *Parser) or() (Expr, error) {
     expr, err := p.and()
     if err != nil { return nil, err }
 
-    while p.match(OR) {
+    for p.match(OR) {
         operator := p.previous()
         right, err := p.and()
         if err != nil { return nil, err }
 
-        expr = NewLogical(expr, operator, right), nil
+        expr = NewLogical(expr, operator, right)
     }
 
     return expr, nil
 }
 
 // RULE logic_and: equality ( "and" equality )*
-func (p *Parser) or() (Expr, error) {
+func (p *Parser) and() (Expr, error) {
     expr, err := p.equality()
     if err != nil { return nil, err }
 
-    while p.match(OR) {
+    for p.match(OR) {
         operator := p.previous()
-        right, err := p.eqaulity()
+        right, err := p.equality()
         if err != nil { return nil, err }
 
-        expr = NewLogical(expr, operator, right), nil
+        expr = NewLogical(expr, operator, right)
     }
 
     return expr, nil

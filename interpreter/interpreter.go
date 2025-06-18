@@ -239,6 +239,21 @@ func (i Interpreter) VisitVar(stmt Var) (Object, error) {
     return nil, nil
 }
 
+func (i Interpreter) VisitWhile(stmt While) (Object, error) {
+    cond, err := i.evaluate(stmt.Condition)
+    if err != nil { return nil, err }
+
+    for isTruthy(cond) {
+        err = i.execute(stmt.Body)
+        if err != nil { return nil, err }
+
+        cond, err = i.evaluate(stmt.Condition)
+        if err != nil { return nil, err }
+    }
+    
+    return nil, nil
+}
+
 func (i Interpreter) VisitAssign(expr Assign) (Object, error) {
     value, err := i.evaluate(expr.Value)
     if err != nil { return nil, err }

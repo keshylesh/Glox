@@ -1,0 +1,16 @@
+var condition = true;
+var a = 5;
+var b = 7;
+while (condition) {
+    if (a == b) {
+        print "a and b are equal";
+        condition = false;
+    }
+    else {
+        print "a is:"; 
+        print a;
+        print "b is:";
+        print b;
+        b = b - 1;
+    }
+}
