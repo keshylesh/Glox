@@ -6,12 +6,12 @@ import (
 )
 
 type ExprVisitor interface {
+	VisitBinary(obj Binary) (Object, error)
 	VisitGrouping(obj Grouping) (Object, error)
 	VisitLiteral(obj Literal) (Object, error)
 	VisitUnary(obj Unary) (Object, error)
 	VisitVariable(obj Variable) (Object, error)
 	VisitAssign(obj Assign) (Object, error)
-	VisitBinary(obj Binary) (Object, error)
 }
 
 type Expr interface{

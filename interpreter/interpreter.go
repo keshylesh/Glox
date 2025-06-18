@@ -52,18 +52,15 @@ func (i Interpreter) VisitGrouping(expr Grouping) (Object, error) {
 
 func (i Interpreter) VisitUnary(expr Unary) (Object, error) {
     right, err := i.evaluate(expr.Right)
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
 
     switch expr.Operator.Type {
     case BANG:
         return !isTruthy(right), nil
     case MINUS:
         err = verifyType("float64", "number", expr.Operator, right)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return -(right.(float64)), nil
     }
 
@@ -76,27 +73,22 @@ func (i Interpreter) VisitVariable(expr Variable) (Object, error) {
 
 func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
     left, err := i.evaluate(expr.Left)
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
+
     right, err := i.evaluate(expr.Right)
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
 
     switch expr.Operator.Type {
     case GREAT:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return left.(float64) > right.(float64), nil
         
     case GREAT_EQUAL:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return left.(float64) >= right.(float64), nil
 
     case LESS:
@@ -108,9 +100,8 @@ func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
 
     case LESS_EQUAL:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return left.(float64) <= right.(float64), nil
 
     case BANG_EQUAL:
@@ -121,9 +112,8 @@ func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
 
     case MINUS:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return left.(float64) - right.(float64), nil
 
     case PLUS:
@@ -145,19 +135,18 @@ func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
 
     case SLASH:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         if right.(float64) == 0 {
             return nil, &RuntimeError{expr.Operator, "Cannot divide by zero"}
         }
+
         return left.(float64) / right.(float64), nil
 
     case STAR:
         err = verifyType("float64", "number", expr.Operator, right, left)
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
+
         return left.(float64) * right.(float64), nil
     }
 
@@ -191,15 +180,28 @@ func (i Interpreter) executeBlock(statements []Stmt, env *Environment) error {
 
 func (i Interpreter) VisitBlock(stmt Block) (Object, error) {
     err := i.executeBlock(stmt.Statements, NewEnvironment(i.env))
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
     return nil, nil
 }
 
 func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (Object, error) {
     _, err := i.evaluate(stmt.Expression)
     return nil, err
+}
+
+func (i Interpreter) VisitIf(stmt If) (Object, error) {
+    cond, err := i.evaluate(stmt.Condition)
+    if err != nil { return nil, err }
+
+    if isTruthy(cond) {
+        err = i.execute(stmt.ThenBranch)
+        if err != nil { return nil, err }
+    } else if stmt.ElseBranch != nil {
+        err = i.execute(stmt.ElseBranch)
+        if err != nil { return nil, err }
+    }
+
+    return nil, nil
 }
 
 func (i Interpreter) VisitPrint(stmt Print) (Object, error) {
@@ -216,9 +218,7 @@ func (i Interpreter) VisitVar(stmt Var) (Object, error) {
     if stmt.Initializer != nil {
         value, err := i.evaluate(stmt.Initializer)
         val = value
-        if err != nil {
-            return nil, err
-        }
+        if err != nil { return nil, err }
     }
 
     i.env.Define(stmt.Name.Lexeme, val)
@@ -227,9 +227,8 @@ func (i Interpreter) VisitVar(stmt Var) (Object, error) {
 
 func (i Interpreter) VisitAssign(expr Assign) (Object, error) {
     value, err := i.evaluate(expr.Value)
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
+
     i.env.Assign(expr.Name, value)
     return value, nil
 }
@@ -240,6 +239,7 @@ func isTruthy(obj Object) bool {
     if obj == nil {
         return false
     }
+
     switch obj.(type) {
     case bool:
         return obj.(bool)
@@ -253,9 +253,11 @@ func isEqual(x, y Object) bool {
     if x == nil && y == nil {
         return true
     } 
+
     if x == nil {
         return false
     }
+
     return reflect.DeepEqual(x, y)
 }
 
