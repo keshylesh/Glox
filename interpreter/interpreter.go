@@ -46,6 +46,20 @@ func (i Interpreter) VisitLiteral(expr Literal) (Object, error) {
     return expr.Value, nil
 }
 
+func (i Interpreter) VisitLogical(expr Logical) (Object, error) {
+    left, err := i.evaluate(expr.Left)
+    if err != nil { return nil, err }
+
+    if expr.Operator.Type == AND && !isTruthy(left) {
+        return left, nil 
+    }
+    if expr.Operator.Type == OR && isTruthy(left) {
+        return left, nil 
+    }
+
+    return i.evaluate(expr.Right)
+}
+
 func (i Interpreter) VisitGrouping(expr Grouping) (Object, error) {
     return i.evaluate(expr.Expression)
 }

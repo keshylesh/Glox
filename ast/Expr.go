@@ -9,6 +9,7 @@ type ExprVisitor interface {
 	VisitBinary(obj Binary) (Object, error)
 	VisitGrouping(obj Grouping) (Object, error)
 	VisitLiteral(obj Literal) (Object, error)
+	VisitLogical(obj Logical) (Object, error)
 	VisitUnary(obj Unary) (Object, error)
 	VisitVariable(obj Variable) (Object, error)
 	VisitAssign(obj Assign) (Object, error)
@@ -16,18 +17,6 @@ type ExprVisitor interface {
 
 type Expr interface{
 	Accept(v ExprVisitor) (Object, error)
-}
-
-type Literal struct {
-	Value Object
-}
-
-func NewLiteral(Value Object) Literal {
-	return Literal{Value,}
-}
-
-func (obj Literal) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitLiteral(obj)
 }
 
 type Unary struct {
@@ -92,5 +81,31 @@ func NewGrouping(Expression Expr) Grouping {
 
 func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitGrouping(obj)
+}
+
+type Literal struct {
+	Value Object
+}
+
+func NewLiteral(Value Object) Literal {
+	return Literal{Value,}
+}
+
+func (obj Literal) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitLiteral(obj)
+}
+
+type Logical struct {
+	Left Expr
+	Operator Token
+	Right Expr
+}
+
+func NewLogical(Left Expr, Operator Token, Right Expr) Logical {
+	return Logical{Left, Operator, Right,}
+}
+
+func (obj Logical) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitLogical(obj)
 }
 

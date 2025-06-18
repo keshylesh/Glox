@@ -161,12 +161,10 @@ func (p *Parser) expression() (Expr, error) {
     return p.assignment()
 }
 
-// RULE assignment: IDENTIFIER "=" assignment | equality
+// RULE assignment: IDENTIFIER "=" assignment | logic_or
 func (p *Parser) assignment() (Expr, error) {
-    expr, error := p.equality()
-    if error != nil {
-        return nil, error
-    }
+    expr, error := p.or()
+    if error != nil { return nil, error }
 
     if p.match(EQUAL) {
         switch expr.(type) {
@@ -185,6 +183,38 @@ func (p *Parser) assignment() (Expr, error) {
     }
 
     return expr, nil 
+}
+
+// RULE logic_or: logic_and ( "or" logic_and )*
+func (p *Parser) or() (Expr, error) {
+    expr, err := p.and()
+    if err != nil { return nil, err }
+
+    while p.match(OR) {
+        operator := p.previous()
+        right, err := p.and()
+        if err != nil { return nil, err }
+
+        expr = NewLogical(expr, operator, right), nil
+    }
+
+    return expr, nil
+}
+
+// RULE logic_and: equality ( "and" equality )*
+func (p *Parser) or() (Expr, error) {
+    expr, err := p.equality()
+    if err != nil { return nil, err }
+
+    while p.match(OR) {
+        operator := p.previous()
+        right, err := p.eqaulity()
+        if err != nil { return nil, err }
+
+        expr = NewLogical(expr, operator, right), nil
+    }
+
+    return expr, nil
 }
 
 // RULE equality: comparison ( ( "!=" | "==" ) comparison )*
