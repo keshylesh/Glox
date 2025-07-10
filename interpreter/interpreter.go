@@ -17,6 +17,11 @@ func ErrorRuntime(error RuntimeError) {
 }
 
 
+type Callable interface {
+    Call(interpreter Interpreter, args []Object) (Object, error)
+}
+
+
 type Interpreter struct {
     ev ExprVisitor
     sv StmtVisitor
@@ -28,7 +33,7 @@ func NewInterpreter() Interpreter {
     return Interpreter{env: NewEnvironment()}
 }
 
-// function to interpret a series fo statements
+// function to interpret a series of statements
 func (i Interpreter) Interpret(statements []Stmt) {
     for _, statement := range statements {
         err := i.execute(statement)
@@ -165,6 +170,24 @@ func (i Interpreter) VisitBinary(expr Binary) (Object, error) {
     }
 
     return nil, nil
+}
+
+func (i Interpreter) VisitCall(expr Call) (Object, error) {
+    callee, err := i.evaluate(expr.Callee)
+    if err != nil { return nil, err }
+
+    args := make([]Object, 0)
+    for _, arg := range expr.Arguments {
+        val, err := i.evaluate(arg)
+        if err != nil { return nil, err }
+        args = append(args, val)
+    }
+
+    function, ok := callee.(Callable)
+    if !ok {
+        return nil, &RuntimeError{expr.Paren, "Can only call functions and classes"}
+    }
+    return function.Call(i, args)
 }
 
 func (i Interpreter) evaluate(expr Expr) (Object, error) {

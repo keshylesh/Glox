@@ -11,12 +11,25 @@ type ExprVisitor interface {
 	VisitVariable(obj Variable) (Object, error)
 	VisitAssign(obj Assign) (Object, error)
 	VisitBinary(obj Binary) (Object, error)
+	VisitCall(obj Call) (Object, error)
 	VisitGrouping(obj Grouping) (Object, error)
 	VisitLiteral(obj Literal) (Object, error)
 }
 
 type Expr interface{
 	Accept(v ExprVisitor) (Object, error)
+}
+
+type Grouping struct {
+	Expression Expr
+}
+
+func NewGrouping(Expression Expr) Grouping {
+	return Grouping{Expression,}
+}
+
+func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitGrouping(obj)
 }
 
 type Literal struct {
@@ -97,15 +110,17 @@ func (obj Binary) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitBinary(obj)
 }
 
-type Grouping struct {
-	Expression Expr
+type Call struct {
+	Callee Expr
+	Paren Token
+	Arguments []Expr
 }
 
-func NewGrouping(Expression Expr) Grouping {
-	return Grouping{Expression,}
+func NewCall(Callee Expr, Paren Token, Arguments []Expr) Call {
+	return Call{Callee, Paren, Arguments,}
 }
 
-func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitGrouping(obj)
+func (obj Call) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitCall(obj)
 }
 

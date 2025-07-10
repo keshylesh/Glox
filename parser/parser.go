@@ -87,7 +87,7 @@ func (p *Parser) statement() (Stmt, error) {
 // RULE forStmt: "for" "(" ( varDecl | exprStmt | ";" )
 //               expression? ";" expression? ")" statement
 func (p *Parser) forStmt() (Stmt, error) {
-    _, err := p.consume(LEFT_PAREN, "Exprect '(' after for")
+    _, err := p.consume(LEFT_PAREN, "Expect '(' after for")
     if err != nil { return nil, err }
 
     var initializer Stmt
@@ -140,7 +140,7 @@ func (p *Parser) forStmt() (Stmt, error) {
 
 // RULE whileStmt: "while" "(" expression ")" statement
 func (p *Parser) whileStmt() (Stmt, error) {
-    _, err := p.consume(LEFT_PAREN, "Exprect '(' after while")
+    _, err := p.consume(LEFT_PAREN, "Expect '(' after while")
     if err != nil { return nil, err }
 
     condition, err := p.expression()
@@ -240,8 +240,8 @@ func (p *Parser) expression() (Expr, error) {
 
 // RULE assignment: IDENTIFIER "=" assignment | logic_or
 func (p *Parser) assignment() (Expr, error) {
-    expr, error := p.or()
-    if error != nil { return nil, error }
+    expr, err := p.or()
+    if err != nil { return nil, err }
 
     if p.match(EQUAL) {
         switch expr.(type) {
@@ -252,10 +252,10 @@ func (p *Parser) assignment() (Expr, error) {
             return NewAssign(expr.(Variable).Name, value), nil
         default:
             equals := p.previous()
-            _, error := p.assignment()
-            if error != nil { return nil, error }
+            _, err := p.assignment()
+            if err != nil { return nil, err }
 
-            return nil, err(equals, "Invalid assignment target")
+            return nil, reportErr(equals, "Invalid assignment target")
         }
     }
 
@@ -355,7 +355,7 @@ func (p *Parser) factor() (Expr, error) {
     return expr, nil
 }
 
-// RULE unary: ( "!" | "-" ) unary | primary
+// RULE unary: ( "!" | "-" ) unary | call
 func (p *Parser) unary() (Expr, error) {
     if p.match(BANG, MINUS) {
         operator := p.previous()
@@ -365,7 +365,47 @@ func (p *Parser) unary() (Expr, error) {
         return NewUnary(operator, right), err
     }
 
-    return p.primary()
+    return p.call()
+}
+
+// RULE call: primary ( "(" arguments? ")" )*
+func (p *Parser) call() (Expr, error) {
+    expr, err := p.primary()
+    if err != nil { return nil, err }
+
+    for {
+        if p.match(LEFT_PAREN) {
+            expr, err = p.finishCall(expr)
+            if err != nil { return nil, err }
+        } else {
+            break
+        }
+    }
+
+    return expr, nil
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, error) {
+    args := make([]Expr, 0)
+    if !p.check(RIGHT_PAREN) {
+        expr, err := p.expression()
+        if err != nil { return nil, err }
+        args = append(args, expr)
+        
+        for p.match(COMMA) {
+            if len(args) >= 255 {
+                reportErr(p.peek(), "Can't have more than 255 arguments")
+            }
+            expr, err := p.expression()
+            if err != nil { return nil, err }
+            args = append(args, expr)
+        }
+    } 
+
+    paren, err := p.consume(RIGHT_PAREN, "Expect ')' after arguments")
+    if err != nil { return nil, err }
+
+    return NewCall(callee, paren, args), nil
 }
 
 // RULE primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
@@ -391,7 +431,7 @@ func (p *Parser) primary() (Expr, error) {
         return NewGrouping(expr), nil
     }
 
-    return nil, err(p.peek(), "Expect expression.")
+    return nil, reportErr(p.peek(), "Expect expression.")
 }
 
 // function to check if the current token is any of the passed in types
@@ -413,7 +453,7 @@ func (p *Parser) consume(ttype TokenType, msg string) (Token, error) {
         return p.advance(), nil
     }
 
-    return Token{}, err(p.peek(), msg)
+    return Token{}, reportErr(p.peek(), msg)
 }
 
 // function to check if the given type matches the current token's type
@@ -453,7 +493,7 @@ func (p *Parser) previous() Token {
 }
 
 // return error
-func err(token Token, msg string) error {
+func reportErr(token Token, msg string) error {
     TokenError(token, msg)
     return &ParseError{token, msg}
 }

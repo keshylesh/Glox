@@ -6,28 +6,16 @@ import (
 )
 
 type StmtVisitor interface {
+	VisitBlock(obj Block) (Object, error)
 	VisitStmtExpression(obj StmtExpression) (Object, error)
 	VisitIf(obj If) (Object, error)
 	VisitPrint(obj Print) (Object, error)
 	VisitVar(obj Var) (Object, error)
 	VisitWhile(obj While) (Object, error)
-	VisitBlock(obj Block) (Object, error)
 }
 
 type Stmt interface{
 	Accept(v StmtVisitor) (Object, error)
-}
-
-type StmtExpression struct {
-	Expression Expr
-}
-
-func NewStmtExpression(Expression Expr) StmtExpression {
-	return StmtExpression{Expression,}
-}
-
-func (obj StmtExpression) Accept(v StmtVisitor) (Object, error) {
-	return v.VisitStmtExpression(obj)
 }
 
 type If struct {
@@ -92,5 +80,17 @@ func NewBlock(Statements []Stmt) Block {
 
 func (obj Block) Accept(v StmtVisitor) (Object, error) {
 	return v.VisitBlock(obj)
+}
+
+type StmtExpression struct {
+	Expression Expr
+}
+
+func NewStmtExpression(Expression Expr) StmtExpression {
+	return StmtExpression{Expression,}
+}
+
+func (obj StmtExpression) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitStmtExpression(obj)
 }
 

@@ -19,6 +19,7 @@ func main() {
     defineAst(outputDir, "Expr", map[string][]string {
         "Assign": {"Name Token", "Value Expr"},
         "Binary": {"Left Expr", "Operator Token", "Right Expr"},
+        "Call": {"Callee Expr", "Paren Token", "Arguments []Expr"},
         "Grouping": {"Expression Expr"},
         "Literal": {"Value Object"},
         "Logical": {"Left Expr", "Operator Token", "Right Expr"},
