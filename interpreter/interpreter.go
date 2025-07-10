@@ -16,21 +16,20 @@ func ErrorRuntime(error RuntimeError) {
     HadRuntimeError = true
 }
 
-
-type Callable interface {
-    Call(interpreter Interpreter, args []Object) (Object, error)
-}
-
-
 type Interpreter struct {
     ev ExprVisitor
     sv StmtVisitor
     env *Environment
+    globals *Environment
 }
 
 // Interpreter "constructor"
 func NewInterpreter() Interpreter {
-    return Interpreter{env: NewEnvironment()}
+    global := NewEnvironment()
+    var clock Clock 
+    global.Define("clock", clock)
+
+    return Interpreter{env: global, globals: global}
 }
 
 // function to interpret a series of statements
@@ -187,6 +186,11 @@ func (i Interpreter) VisitCall(expr Call) (Object, error) {
     if !ok {
         return nil, &RuntimeError{expr.Paren, "Can only call functions and classes"}
     }
+    if len(args) != function.Arity() {
+        errMsg := fmt.Sprintf("Expected %v but got %v", function.Arity(), len(args))
+        return nil, &RuntimeError{expr.Paren, errMsg}
+    }
+
     return function.Call(i, args)
 }
 
