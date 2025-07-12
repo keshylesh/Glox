@@ -42,8 +42,16 @@ func (p *Parser) Parse() []Stmt {
     return ret
 }
 
-// RULE declaration: varDecl | statement
+// RULE declaration: function | varDecl | statement
 func (p *Parser) declaration() (Stmt, error) {
+    if p.match(FUN) {
+        ret, err := p.function("function")
+        if err != nil {
+            p.synchronize()
+            return nil, err
+        }
+        return ret, nil
+    }
     if p.match(VAR) {
         ret, err := p.varDecl()
         if err != nil {
@@ -59,6 +67,36 @@ func (p *Parser) declaration() (Stmt, error) {
         return nil, err
     }
     return ret, nil
+}
+
+// RULE: function: IDENTIFIER "(" parameters? ")" block
+func (p *Parser) function(kind string) (Stmt, error) {
+    name, err := p.consume(IDENTIFIER, "Expect " + kind + " name")
+    if err != nil { return nil, err }
+    _, err = p.consume(LEFT_PAREN, "Expect '(' after " + kind + " name")
+    params := make([]Token, 0)
+    if !p.check(RIGHT_PAREN) {
+        for {
+            if len(params) >= 255 {
+                reportErr(p.peek(), "Can't have more than 255 parameters")
+            }
+
+            add, err := p.consume(IDENTIFIER, "Expect parameter name")
+            if err != nil { return nil, err }
+            params = append(params, add)
+            if !p.match(COMMA) {
+                break
+            } 
+        }
+    }
+    _, err = p.consume(RIGHT_PAREN, "Expect ')' after parameters")
+    if err != nil { return nil, err }
+
+    _, err = p.consume(LEFT_BRACE, "Expect '{' before " + kind + " body")
+    if err != nil { return nil, err }
+    body, err := p.block()
+    if err != nil { return nil, err }
+    return NewFunction(name, params, body), nil
 }
 
 // RULE statement: exprStmt | forStmt | ifStmt | printStmt | whileStmt | block

@@ -30,6 +30,7 @@ func main() {
     defineAst(outputDir, "Stmt", map[string][]string {
         "Block": {"Statements []Stmt"},
         "StmtExpression": {"Expression Expr"},
+        "Function": {"Name Token", "Params []Token", "Body []Stmt"},
         "If": {"Condition Expr", "ThenBranch Stmt", "ElseBranch Stmt"},
         "Print": {"Expression Expr"},
         "Var": {"Name Token", "Initializer Expr"},

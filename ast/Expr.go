@@ -20,57 +20,6 @@ type Expr interface{
 	Accept(v ExprVisitor) (Object, error)
 }
 
-type Grouping struct {
-	Expression Expr
-}
-
-func NewGrouping(Expression Expr) Grouping {
-	return Grouping{Expression,}
-}
-
-func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitGrouping(obj)
-}
-
-type Literal struct {
-	Value Object
-}
-
-func NewLiteral(Value Object) Literal {
-	return Literal{Value,}
-}
-
-func (obj Literal) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitLiteral(obj)
-}
-
-type Logical struct {
-	Left Expr
-	Operator Token
-	Right Expr
-}
-
-func NewLogical(Left Expr, Operator Token, Right Expr) Logical {
-	return Logical{Left, Operator, Right,}
-}
-
-func (obj Logical) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitLogical(obj)
-}
-
-type Unary struct {
-	Operator Token
-	Right Expr
-}
-
-func NewUnary(Operator Token, Right Expr) Unary {
-	return Unary{Operator, Right,}
-}
-
-func (obj Unary) Accept(v ExprVisitor) (Object, error) {
-	return v.VisitUnary(obj)
-}
-
 type Variable struct {
 	Name Token
 }
@@ -122,5 +71,56 @@ func NewCall(Callee Expr, Paren Token, Arguments []Expr) Call {
 
 func (obj Call) Accept(v ExprVisitor) (Object, error) {
 	return v.VisitCall(obj)
+}
+
+type Grouping struct {
+	Expression Expr
+}
+
+func NewGrouping(Expression Expr) Grouping {
+	return Grouping{Expression,}
+}
+
+func (obj Grouping) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitGrouping(obj)
+}
+
+type Literal struct {
+	Value Object
+}
+
+func NewLiteral(Value Object) Literal {
+	return Literal{Value,}
+}
+
+func (obj Literal) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitLiteral(obj)
+}
+
+type Logical struct {
+	Left Expr
+	Operator Token
+	Right Expr
+}
+
+func NewLogical(Left Expr, Operator Token, Right Expr) Logical {
+	return Logical{Left, Operator, Right,}
+}
+
+func (obj Logical) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitLogical(obj)
+}
+
+type Unary struct {
+	Operator Token
+	Right Expr
+}
+
+func NewUnary(Operator Token, Right Expr) Unary {
+	return Unary{Operator, Right,}
+}
+
+func (obj Unary) Accept(v ExprVisitor) (Object, error) {
+	return v.VisitUnary(obj)
 }
 

@@ -230,6 +230,12 @@ func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (Object, error) {
     return nil, err
 }
 
+func (i Interpreter) VisitFunction(stmt Function) (Object, error) {
+    function := NewLoxFunction(stmt)
+    i.env.Define(stmt.Name.Lexeme, function)
+    return nil, nil
+}
+
 func (i Interpreter) VisitIf(stmt If) (Object, error) {
     cond, err := i.evaluate(stmt.Condition)
     if err != nil { return nil, err }
@@ -321,7 +327,12 @@ func isEqual(x, y Object) bool {
 func stringify(obj Object) string {
     if obj == nil {
         return "nil"
-    } 
+    }
+
+    // HACK: Go has no innate "ToString" manually checking if object is callable
+    if function, ok := obj.(Callable); ok {
+        return function.ToString()
+    }
 
     return fmt.Sprintf("%v", obj) 
 }

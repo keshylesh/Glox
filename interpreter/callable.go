@@ -7,4 +7,5 @@ import (
 type Callable interface {
     Arity() int
     Call(interpreter Interpreter, args []Object) (Object, error)
+    ToString() string
 }
