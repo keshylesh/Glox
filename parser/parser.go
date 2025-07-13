@@ -99,7 +99,7 @@ func (p *Parser) function(kind string) (Stmt, error) {
     return NewFunction(name, params, body), nil
 }
 
-// RULE statement: exprStmt | forStmt | ifStmt | printStmt | whileStmt | block
+// RULE statement: exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | block
 func (p *Parser) statement() (Stmt, error) {
     if p.match(FOR) {
         return p.forStmt()
@@ -109,6 +109,9 @@ func (p *Parser) statement() (Stmt, error) {
     }
     if p.match(PRINT) {
         return p.printStmt()
+    }
+    if p.match(RETURN) {
+        return p.returnStmt()
     }
     if p.match(WHILE) {
         return p.whileStmt()
@@ -241,6 +244,23 @@ func (p *Parser) printStmt() (Stmt, error) {
     if err != nil { return nil, err }
 
     return NewPrint(val), nil
+}
+
+// RULE returnStmt: "return" expression? ";"
+func (p *Parser) returnStmt() (Stmt, error) {
+    keyword := p.previous()
+    var val Expr = nil
+    if !p.check(SEMICOLON) {
+        value, err := p.expression()
+        val = value
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    _, err := p.consume(SEMICOLON, "Expect ';' after return value")
+    if err != nil { return nil, err }
+    return NewReturn(keyword, val), nil
 }
 
 // RULE "var" IDENTIFIER ( "=" expression )? ";"

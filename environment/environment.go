@@ -3,17 +3,8 @@ package environment
 import (
     . "glox/util"
     . "glox/token"
-    "fmt"
+    . "glox/loxError"
 )
-
-type RuntimeError struct {
-    Token Token
-    Msg string
-}
-
-func (e *RuntimeError) Error() string {
-    return fmt.Sprintf("%v - %v", e.Token, e.Msg)
-}
 
 type Environment struct {
     enclosing *Environment

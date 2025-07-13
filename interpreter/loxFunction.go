@@ -4,6 +4,8 @@ import (
 	. "glox/ast"
 	. "glox/util"
 	. "glox/environment"
+	. "glox/loxError"
+	"errors"
 )
 
 type LoxFunction struct {
@@ -21,7 +23,12 @@ func (f LoxFunction) Call(i Interpreter, args []Object) (Object, error) {
     }
 
     err := i.executeBlock(f.declaration.Body, env)
-    if err != nil { return nil, err }
+    var re *ReturnError
+    if errors.As(err, &re) {
+        return re.Value, nil
+    } else if err != nil { 
+        return nil, err
+    }
 
     return nil, nil
 }

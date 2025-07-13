@@ -5,16 +5,11 @@ import (
     . "glox/token"
     . "glox/util"
     . "glox/environment"
+    . "glox/loxError"
     "reflect"
     "fmt"
     "errors"
-    "os"
 )
-
-func ErrorRuntime(error RuntimeError) {
-    fmt.Fprintf(os.Stderr, "%v\n[line %v]\n", error.Msg, error.Token.Line)
-    HadRuntimeError = true
-}
 
 type Interpreter struct {
     ev ExprVisitor
@@ -260,12 +255,27 @@ func (i Interpreter) VisitPrint(stmt Print) (Object, error) {
     return nil, err
 }
 
+func (i Interpreter) VisitReturn(stmt Return) (Object, error) {
+    var val Object = nil
+    if stmt.Value != nil {
+        value, err := i.evaluate(stmt.Value) 
+        val = value
+        if err != nil { 
+            return nil, err
+        }
+    }
+
+    return nil, &ReturnError{ val }
+}
+
 func (i Interpreter) VisitVar(stmt Var) (Object, error) {
     var val Object = nil
     if stmt.Initializer != nil {
         value, err := i.evaluate(stmt.Initializer)
         val = value
-        if err != nil { return nil, err }
+        if err != nil {
+            return nil, err
+        }
     }
 
     i.env.Define(stmt.Name.Lexeme, val)

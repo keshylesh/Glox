@@ -6,17 +6,32 @@ import (
 )
 
 type StmtVisitor interface {
-	VisitStmtExpression(obj StmtExpression) (Object, error)
-	VisitFunction(obj Function) (Object, error)
-	VisitIf(obj If) (Object, error)
 	VisitPrint(obj Print) (Object, error)
+	VisitReturn(obj Return) (Object, error)
 	VisitVar(obj Var) (Object, error)
 	VisitWhile(obj While) (Object, error)
 	VisitBlock(obj Block) (Object, error)
+	VisitStmtExpression(obj StmtExpression) (Object, error)
+	VisitFunction(obj Function) (Object, error)
+	VisitIf(obj If) (Object, error)
 }
 
 type Stmt interface{
 	Accept(v StmtVisitor) (Object, error)
+}
+
+type Function struct {
+	Name Token
+	Params []Token
+	Body []Stmt
+}
+
+func NewFunction(Name Token, Params []Token, Body []Stmt) Function {
+	return Function{Name, Params, Body,}
+}
+
+func (obj Function) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitFunction(obj)
 }
 
 type If struct {
@@ -43,6 +58,19 @@ func NewPrint(Expression Expr) Print {
 
 func (obj Print) Accept(v StmtVisitor) (Object, error) {
 	return v.VisitPrint(obj)
+}
+
+type Return struct {
+	Keyword Token
+	Value Expr
+}
+
+func NewReturn(Keyword Token, Value Expr) Return {
+	return Return{Keyword, Value,}
+}
+
+func (obj Return) Accept(v StmtVisitor) (Object, error) {
+	return v.VisitReturn(obj)
 }
 
 type Var struct {
@@ -93,19 +121,5 @@ func NewStmtExpression(Expression Expr) StmtExpression {
 
 func (obj StmtExpression) Accept(v StmtVisitor) (Object, error) {
 	return v.VisitStmtExpression(obj)
-}
-
-type Function struct {
-	Name Token
-	Params []Token
-	Body []Stmt
-}
-
-func NewFunction(Name Token, Params []Token, Body []Stmt) Function {
-	return Function{Name, Params, Body,}
-}
-
-func (obj Function) Accept(v StmtVisitor) (Object, error) {
-	return v.VisitFunction(obj)
 }
 
