@@ -226,7 +226,7 @@ func (i Interpreter) VisitStmtExpression(stmt StmtExpression) (Object, error) {
 }
 
 func (i Interpreter) VisitFunction(stmt Function) (Object, error) {
-    function := NewLoxFunction(stmt)
+    function := NewLoxFunction(stmt, i.env)
     i.env.Define(stmt.Name.Lexeme, function)
     return nil, nil
 }

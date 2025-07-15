@@ -10,14 +10,15 @@ import (
 
 type LoxFunction struct {
     declaration Function
+    closure *Environment
 }
 
-func NewLoxFunction(decl Function) *LoxFunction {
-    return &LoxFunction{ declaration: decl }
+func NewLoxFunction(decl Function, closure *Environment) *LoxFunction {
+    return &LoxFunction{ declaration: decl, closure: closure }
 }
 
 func (f LoxFunction) Call(i Interpreter, args []Object) (Object, error) {
-    env := NewEnvironment(i.globals)
+    env := NewEnvironment(f.closure)
     for k := 0; k < len(f.declaration.Params); k++ {
         env.Define(f.declaration.Params[k].Lexeme, args[k])
     }
